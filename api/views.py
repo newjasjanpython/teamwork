@@ -113,14 +113,16 @@ class AnswerListCreateAPIView(generics.ListCreateAPIView):
 class AnswerRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Answer.objects.all()
     serializer_class = AnswerSerializer
-
 # Logger setup
 logger = logging.getLogger(__name__)
 
 def test_view(request, test_id):
+    """
+    Renders a page to display the test with questions and answers.
+    """
     # Retrieve the test object, or return 404 if not found
     test = get_object_or_404(Test, id=test_id)
-    
+
     # Get questions related to the test
     questions = test.questions.all()
 
@@ -138,37 +140,36 @@ def submit_test(request, test_id):
     try:
         # Retrieve the test based on the test_id
         test = Test.objects.get(id=test_id)
-        logger.info(f"Test retrieved: {test.name}")
+        logger.info(f"Test retrieved: {test.title}")
 
         # Get the submitted answers from the request (assumed to be in the body of the request)
         submitted_answers = request.data.get('answers', {})
         logger.info(f"Submitted answers: {submitted_answers}")
 
-        # Make sure that answers were provided
+        # Ensure that answers were provided
         if not submitted_answers:
             return JsonResponse({"error": "No answers submitted"}, status=400)
 
         score = 0
-        total_questions = 0
+        total_questions = test.questions.count()
 
         # Loop through each question in the test
         for question in test.questions.all():
-            total_questions += 1
-            correct_answer = question.correct_answer
-            logger.info(f"Question: {question.text}, Correct Answer: {correct_answer.text}")
+            correct_answer = question.answers.filter(is_correct=True).first()
+            if correct_answer and str(question.id) in submitted_answers:
+                if submitted_answers[str(question.id)] == str(correct_answer.id):
+                    score += 1
 
-            # Check if the answer provided by the user matches the correct one
-            if str(question.id) in submitted_answers and submitted_answers[str(question.id)] == str(correct_answer.id):
-                score += 1
+        # Calculate the percentage
+        percentage = (score / total_questions) * 100 if total_questions > 0 else 0
+        logger.info(f"Score: {score}, Total Questions: {total_questions}, Percentage: {percentage:.2f}%")
 
-        # Log the score and total questions
-        logger.info(f"Score: {score}, Total Questions: {total_questions}")
-        # Return the score with total number of questions
         return JsonResponse({
             "score": score,
             "total_questions": total_questions,
-            "message": f"You scored {score} out of {total_questions}"
+            "percentage": f"{percentage:.2f}%",
+            "message": f"You scored {score} out of {total_questions} ({percentage:.2f}%)"
         }, status=200)
-        
+
     except Test.DoesNotExist:
         return JsonResponse({"error": "Test not found"}, status=404)

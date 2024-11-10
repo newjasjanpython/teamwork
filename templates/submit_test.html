@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Submit Test</title>
+    <title>{{ test.title }}</title>
 </head>
 <body>
     <h1>{{ test.title }}</h1>
     <p>{{ test.description }}</p>
 
-    <!-- Hidden Test ID (passed from Django context) -->
+    <!-- Hidden Test ID -->
     <input type="hidden" id="test-id" value="{{ test.id }}">
 
     <div id="questions">
@@ -35,7 +35,6 @@
 
     <button onclick="submitTest()">Submit Test</button>
 
-    <!-- Results will be displayed here -->
     <div id="result-container" style="display:none; margin-top: 20px;"></div>
 
     <script>
@@ -65,8 +64,7 @@
                 const resultContainer = document.getElementById('result-container');
                 resultContainer.innerHTML = `
                     <h3>Your Results</h3>
-                    <p>You scored ${data.score} out of ${data.total_questions}.</p>
-                    <p>${data.message}</p>
+                    <p>You scored ${data.score} out of ${data.total_questions} (${data.percentage}).</p>
                 `;
                 resultContainer.style.display = 'block';
             })
