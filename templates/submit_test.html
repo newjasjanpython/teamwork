@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Submit Test</title>
+</head>
+<body>
+    <h1>{{ test.title }}</h1>
+    <p>{{ test.description }}</p>
+
+    <!-- Hidden Test ID (passed from Django context) -->
+    <input type="hidden" id="test-id" value="{{ test.id }}">
+
+    <div id="questions">
+        {% if questions %}
+            {% for question in questions %}
+                <div class="question" data-question-id="{{ question.id }}">
+                    <h3>{{ question.question_text }}</h3>
+                    <div>
+                        {% for answer in question.answers.all %}
+                            <label>
+                                <input type="radio" name="question_{{ question.id }}" value="{{ answer.id }}">
+                                {{ answer.text }}
+                            </label>
+                            <br>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p>No questions available for this test.</p>
+        {% endif %}
+    </div>
+
+    <button onclick="submitTest()">Submit Test</button>
+
+    <!-- Results will be displayed here -->
+    <div id="result-container" style="display:none; margin-top: 20px;"></div>
+
+    <script>
+        function submitTest() {
+            const testId = document.getElementById("test-id").value;
+            let answers = {};
+
+            document.querySelectorAll(".question").forEach((questionElement) => {
+                const questionId = questionElement.getAttribute("data-question-id");
+                const selectedAnswer = questionElement.querySelector("input[type='radio']:checked");
+
+                if (selectedAnswer) {
+                    answers[questionId] = selectedAnswer.value;
+                }
+            });
+
+            fetch(`/submit_test/${testId}/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({ answers: answers })
+            })
+            .then(response => response.json())
+            .then(data => {
+                const resultContainer = document.getElementById('result-container');
+                resultContainer.innerHTML = `
+                    <h3>Your Results</h3>
+                    <p>You scored ${data.score} out of ${data.total_questions}.</p>
+                    <p>${data.message}</p>
+                `;
+                resultContainer.style.display = 'block';
+            })
+            .catch(error => {
+                const resultContainer = document.getElementById('result-container');
+                resultContainer.innerHTML = `<p style="color: red;">Error: ${error}</p>`;
+                resultContainer.style.display = 'block';
+            });
+        }
+    </script>
+</body>
+</html>
