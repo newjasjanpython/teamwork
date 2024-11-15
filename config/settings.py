@@ -1,19 +1,16 @@
-
-
 from pathlib import Path
+import os
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-APPEND_SLASH=False
+APPEND_SLASH=True
 
-CORS_ALLOW_ALL_ORIGINS = False  # Disable allowing all origins
-CORS_ALLOWED_ORIGINS = [
-    'https://yourfrontenddomain.com',  # Add the actual domain of your frontend app
-    'http://localhost:3000',  # Example for local dev environment
-]
-
-
+CORS_ALLOW_ALL_ORIGINS = True # Development time only
+# CORS_ALLOWED_ORIGINS = [
+#     'https://yourfrontenddomain.com',  # Add the actual domain of your frontend app
+#     'http://localhost:3000',  # Example for local dev environment
+# ] # Development time only
 
 
 
@@ -21,9 +18,9 @@ SECRET_KEY = 'django-insecure-2fc$wg*k2v)#$hd+cblzle1oac@io6a@w+!oclzh-!$8w7ps41
 
 
 DEBUG = True
-ALLOWED_HOSTS = ["*"]
 
 
+ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -36,9 +33,9 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'corsheaders',
 
-    'quiz',
-    'user',
-    'api'
+    'apps.quiz',
+    'apps.user',
+    'apps.api'
 ]
 
 MIDDLEWARE = [
@@ -56,7 +53,6 @@ MIDDLEWARE = [
 
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
-    
 ]
 
 
@@ -65,7 +61,7 @@ ROOT_URLCONF = 'config.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates'],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -78,15 +74,14 @@ TEMPLATES = [
     },
 ]
 
+
 WSGI_APPLICATION = 'config.wsgi.application'
-
-
 
 
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
 }
 
@@ -113,7 +108,7 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.TokenAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.AllowAny',  # Adjust based on your needs
+        'rest_framework.permissions.AllowAny',
     ],
 }
 
@@ -122,9 +117,9 @@ REST_FRAMEWORK = {
 # Internationalization
 # https://docs.djangoproject.com/en/3.2/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'uz' # My Country Language
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Tashkent'
 
 USE_I18N = True
 
@@ -137,24 +132,14 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
 
 STATIC_URL = '/static/'
-import os
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-
-# Additional locations the staticfiles app will traverse if the FileSystemFinder finder is enabled.
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static'),
-]
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 
 
+MEDIA_URL = '/meida/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'mediafiles')
 
-# Absolute filesystem path to the directory that will hold user-uploaded files.
-# Default primary key field type
-# https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
-AUTH_USER_MODEL = 'user.CustomUser'
-
+AUTH_USER_MODEL = 'user.User'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.ManifestStaticFilesStorage'
-
